@@ -14,36 +14,40 @@ import type {
 
 import {
     damp,
-    floatingOffset,
     nextIndex,
 } from '../bubbleMath'
+
+import type {
+    BubbleBody,
+} from '../physics/physicsTypes'
 
 import {
     BUBBLE_COLORS,
 } from './bubbleData'
 
-import type {
-    BubbleModel,
-} from './bubbleTypes'
+interface NumberRef {
+    current: number
+}
 
 interface BubbleProps {
-    bubble: BubbleModel
-
+    body: BubbleBody
     geometry: SphereGeometry
+    interpolationAlpha: NumberRef
 }
 
 export function Bubble({
-    bubble,
+    body,
     geometry,
+    interpolationAlpha,
 }: BubbleProps) {
     const meshRef =
-        useRef<Mesh>(null)
+        useRef<Mesh>(null!)
 
     const [
         paletteIndex,
         setPaletteIndex,
     ] = useState(
-        bubble.paletteIndex,
+        body.model.paletteIndex,
     )
 
     const [
@@ -57,25 +61,21 @@ export function Bubble({
     ] = useState(false)
 
     useFrame(
-        (state, delta) => {
-            const mesh =
-                meshRef.current
+        (_, delta) => {
+            const mesh = meshRef.current
 
             if (!mesh) {
                 return
             }
 
-            mesh.position.y =
-                bubble.position[1] +
-                floatingOffset(
-                    state.clock.elapsedTime,
-                    bubble.floatAmplitude,
-                    bubble.floatSpeed,
-                    bubble.floatPhase,
-                )
+            mesh.position.lerpVectors(
+                body.previousPosition,
+                body.position,
+                interpolationAlpha.current,
+            )
 
             mesh.rotation.y +=
-                bubble.spinSpeed * delta
+                body.model.spinSpeed * delta
 
             mesh.rotation.x +=
                 0.08 * delta
@@ -88,111 +88,75 @@ export function Bubble({
                         : 1
 
             const targetScale =
-                bubble.radius * pulse
+                body.model.radius * pulse
 
-            const nextScale =
-                damp(
-                    mesh.scale.x,
-                    targetScale,
-                    12,
-                    delta,
-                )
+            const nextScale = damp(
+                mesh.scale.x,
+                targetScale,
+                12,
+                delta,
+            )
 
             mesh.scale.setScalar(
                 nextScale,
             )
         },
+        -1,
     )
 
     return (
         <mesh
             ref={meshRef}
-
             geometry={geometry}
-
             position={
-                bubble.position
+                body.model.initialPosition
             }
-
             scale={[
-                bubble.radius,
-                bubble.radius,
-                bubble.radius,
+                body.model.radius,
+                body.model.radius,
+                body.model.radius,
             ]}
-
-            onPointerOver={
-                (event) => {
-                    event.stopPropagation()
-
-                    setIsHovered(true)
-                }
-            }
-
+            onPointerOver={(event) => {
+                event.stopPropagation()
+                setIsHovered(true)
+            }}
             onPointerOut={() => {
                 setIsHovered(false)
-
                 setIsPressed(false)
             }}
+            onPointerDown={(event) => {
+                event.stopPropagation()
+                setIsPressed(true)
+            }}
+            onPointerUp={(event) => {
+                event.stopPropagation()
+                setIsPressed(false)
+            }}
+            onClick={(event) => {
+                event.stopPropagation()
 
-            onPointerDown={
-                (event) => {
-                    event.stopPropagation()
-
-                    setIsPressed(true)
-                }
-            }
-
-            onPointerUp={
-                (event) => {
-                    event.stopPropagation()
-
-                    setIsPressed(false)
-                }
-            }
-
-            onClick={
-                (event) => {
-                    event.stopPropagation()
-
-                    setPaletteIndex(
-                        (current) =>
-                            nextIndex(
-                                current,
-                                BUBBLE_COLORS.length,
-                            ),
-                    )
-                }
-            }
+                setPaletteIndex(
+                    (current) =>
+                        nextIndex(
+                            current,
+                            BUBBLE_COLORS.length,
+                        ),
+                )
+            }}
         >
             <meshPhysicalMaterial
                 color={
-                    BUBBLE_COLORS[
-                    paletteIndex
-                    ]
+                    BUBBLE_COLORS[paletteIndex]
                 }
-
                 emissive={
-                    BUBBLE_COLORS[
-                    paletteIndex
-                    ]
+                    BUBBLE_COLORS[paletteIndex]
                 }
-
-                emissiveIntensity={
-                    0.06
-                }
-
+                emissiveIntensity={0.06}
                 roughness={0.16}
-
                 metalness={0.02}
-
                 clearcoat={1}
-
-                clearcoatRoughness={
-                    0.08
-                }
-
+                clearcoatRoughness={0.08}
                 transparent
-
                 opacity={0.9}
             />
         </mesh>

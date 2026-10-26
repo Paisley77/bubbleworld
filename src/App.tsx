@@ -8,7 +8,7 @@ import {
 
 import './App.css'
 
-const BUBBLE_COUNT = 80
+const BUBBLE_COUNT = 28
 
 const WORLD_SEED =
   20261013
@@ -89,31 +89,29 @@ export default function App() {
         <p
           className="eyebrow"
         >
-          BUBBLEWORLD · MODULE 02
+          BUBBLEWORLD · MODULE 03
         </p>
 
         <h1>
-          One system. Many bubbles.
+          The bubbles obey physics now.
         </h1>
 
         <p
           className="lede"
         >
-          The scene is now generated from
-          data instead of hand-written
-          objects. Every bubble has its own
-          identity, position, size, motion,
-          and color while sharing the same
-          rendering machinery.
+          Every bubble has a live position,
+          velocity, acceleration, and force.
+          A fixed-step simulation moves the
+          world independently of our
+          monitor&apos;s refresh rate.
         </p>
 
         <p
           className="hint"
         >
-          {BUBBLE_COUNT} deterministic
-          bubbles · hover or press to
-          pulse · click or tap to cycle
-          color
+          Watch the bubbles drift, rise,
+          collide with the invisible world
+          boundaries, and bounce back.
         </p>
       </section>
 
@@ -121,7 +119,7 @@ export default function App() {
         className="world-panel"
 
         aria-label=
-        "Interactive 3D BubbleWorld scene"
+        "Interactive 3D BubbleWorld physics scene"
       >
         <Scene />
       </section>
