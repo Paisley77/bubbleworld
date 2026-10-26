@@ -1,4 +1,6 @@
-import type { BubbleModel } from './bubbleTypes'
+import type {
+    BubbleModel,
+} from './bubbleTypes'
 
 export const BUBBLE_COLORS = [
     '#7dd3fc',
@@ -9,15 +11,38 @@ export const BUBBLE_COLORS = [
     '#fb7185',
 ]
 
-function createSeededRandom(seed: number): () => number {
-    if (!Number.isInteger(seed)) { throw new Error('seed must be an integer') }
+function createSeededRandom(
+    seed: number,
+): () => number {
+    if (!Number.isInteger(seed)) {
+        throw new Error('seed must be an integer')
+    }
+
     let state = seed >>> 0
+
     return () => {
-        state = (state + 0x6d2b79f5) >>> 0
+        state = (
+            state + 0x6d2b79f5
+        ) >>> 0
+
         let value = state
-        value = Math.imul(value ^ (value >>> 15), value | 1)
-        value ^= (value + Math.imul(value ^ (value >>> 7), value | 61))
-        return ((value ^ (value >>> 14)) >>> 0) / 4294967296
+
+        value = Math.imul(
+            value ^ (value >>> 15),
+            value | 1,
+        )
+
+        value ^= (
+            value +
+            Math.imul(
+                value ^ (value >>> 7),
+                value | 61,
+            )
+        )
+
+        return (
+            (value ^ (value >>> 14)) >>> 0
+        ) / 4294967296
     }
 }
 
@@ -46,7 +71,6 @@ export function generateBubbleField(
 
     return Array.from(
         { length: count },
-
         (_, index) => {
             const radius = randomBetween(
                 random,
@@ -62,23 +86,43 @@ export function generateBubbleField(
 
                 name: `Bubble ${index + 1}`,
 
-                position: [
+                initialPosition: [
                     randomBetween(
                         random,
-                        -2.7 + radius,
-                        2.7 - radius,
+                        -2.5 + radius,
+                        2.5 - radius,
                     ),
 
                     randomBetween(
                         random,
-                        -2.2 + radius,
-                        2.2 - radius,
+                        -1.9 + radius,
+                        1.9 - radius,
                     ),
 
                     randomBetween(
                         random,
-                        -1.8,
-                        1.1,
+                        -1.6 + radius,
+                        0.8 - radius,
+                    ),
+                ],
+
+                initialVelocity: [
+                    randomBetween(
+                        random,
+                        -0.55,
+                        0.55,
+                    ),
+
+                    randomBetween(
+                        random,
+                        -0.35,
+                        0.4,
+                    ),
+
+                    randomBetween(
+                        random,
+                        -0.35,
+                        0.35,
                     ),
                 ],
 
@@ -90,32 +134,25 @@ export function generateBubbleField(
                         BUBBLE_COLORS.length,
                     ),
 
-                floatAmplitude:
-                    randomBetween(
-                        random,
-                        0.08,
-                        0.28,
-                    ),
-
-                floatSpeed:
-                    randomBetween(
-                        random,
-                        0.45,
-                        1.05,
-                    ),
-
-                floatPhase:
+                driftPhase:
                     randomBetween(
                         random,
                         0,
                         Math.PI * 2,
                     ),
 
+                buoyancyScale:
+                    randomBetween(
+                        random,
+                        0.7,
+                        1.3,
+                    ),
+
                 spinSpeed:
                     randomBetween(
                         random,
-                        -0.22,
-                        0.22,
+                        -0.25,
+                        0.25,
                     ),
             }
         },
