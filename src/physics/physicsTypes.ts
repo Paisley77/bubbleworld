@@ -14,7 +14,9 @@ export interface WorldBounds {
 export interface PhysicsConfig {
     bounds: WorldBounds
 
-    restitution: number
+    wallRestitution: number
+    bubbleRestitution: number
+
     linearDrag: number
 
     buoyancyAcceleration: number
@@ -22,6 +24,10 @@ export interface PhysicsConfig {
     depthAcceleration: number
 
     maxSpeed: number
+
+    collisionCorrectionPercent: number
+    collisionSlop: number
+    collisionIterations: number
 }
 
 export interface BubbleBody {

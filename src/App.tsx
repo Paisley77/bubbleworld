@@ -89,29 +89,28 @@ export default function App() {
         <p
           className="eyebrow"
         >
-          BUBBLEWORLD · MODULE 03
+          BUBBLEWORLD · MODULE 04
         </p>
 
         <h1>
-          The bubbles obey physics now.
+          The bubbles can collide.
         </h1>
 
         <p
           className="lede"
         >
-          Every bubble has a live position,
-          velocity, acceleration, and force.
-          A fixed-step simulation moves the
-          world independently of our
-          monitor&apos;s refresh rate.
+          Every bubble is now a physical sphere.
+          Overlapping bubbles are separated and
+          exchange momentum using mass-aware
+          collision impulses.
         </p>
 
         <p
           className="hint"
         >
-          Watch the bubbles drift, rise,
-          collide with the invisible world
-          boundaries, and bounce back.
+          Watch moving bubbles strike one another,
+          scatter, rebound, and push clusters
+          around the simulated world.
         </p>
       </section>
 
