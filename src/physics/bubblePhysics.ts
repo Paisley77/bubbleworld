@@ -6,6 +6,10 @@ import type {
     BubbleModel,
 } from '../bubbles/bubbleTypes'
 
+import {
+    resolveBubbleCollisions,
+} from './bubbleCollisions'
+
 import type {
     BubbleBody,
     PhysicsConfig,
@@ -27,7 +31,9 @@ export const PHYSICS_CONFIG: PhysicsConfig = {
         ),
     },
 
-    restitution: 0.84,
+    wallRestitution: 0.84,
+    bubbleRestitution: 0.92,
+
     linearDrag: 0.14,
 
     buoyancyAcceleration: 0.08,
@@ -35,6 +41,10 @@ export const PHYSICS_CONFIG: PhysicsConfig = {
     depthAcceleration: 0.16,
 
     maxSpeed: 1.4,
+
+    collisionCorrectionPercent: 0.8,
+    collisionSlop: 0.001,
+    collisionIterations: 2,
 }
 
 function calculateMass(
@@ -98,7 +108,8 @@ function accumulateAmbientForces(
     body.force.x +=
         mass *
         Math.sin(
-            worldTime * 0.75 + phase,
+            worldTime * 0.75 +
+            phase,
         ) *
         config.windAcceleration
 
@@ -188,69 +199,107 @@ function resolveWorldBounds(
         max.z - radius
 
     if (
-        body.position.x < minimumX
+        body.position.x <
+        minimumX
     ) {
-        body.position.x = minimumX
+        body.position.x =
+            minimumX
 
-        if (body.velocity.x < 0) {
+        if (
+            body.velocity.x < 0
+        ) {
             body.velocity.x =
                 -body.velocity.x *
-                config.restitution
+                config.wallRestitution
         }
     } else if (
-        body.position.x > maximumX
+        body.position.x >
+        maximumX
     ) {
-        body.position.x = maximumX
+        body.position.x =
+            maximumX
 
-        if (body.velocity.x > 0) {
+        if (
+            body.velocity.x > 0
+        ) {
             body.velocity.x =
                 -body.velocity.x *
-                config.restitution
+                config.wallRestitution
         }
     }
 
     if (
-        body.position.y < minimumY
+        body.position.y <
+        minimumY
     ) {
-        body.position.y = minimumY
+        body.position.y =
+            minimumY
 
-        if (body.velocity.y < 0) {
+        if (
+            body.velocity.y < 0
+        ) {
             body.velocity.y =
                 -body.velocity.y *
-                config.restitution
+                config.wallRestitution
         }
     } else if (
-        body.position.y > maximumY
+        body.position.y >
+        maximumY
     ) {
-        body.position.y = maximumY
+        body.position.y =
+            maximumY
 
-        if (body.velocity.y > 0) {
+        if (
+            body.velocity.y > 0
+        ) {
             body.velocity.y =
                 -body.velocity.y *
-                config.restitution
+                config.wallRestitution
         }
     }
 
     if (
-        body.position.z < minimumZ
+        body.position.z <
+        minimumZ
     ) {
-        body.position.z = minimumZ
+        body.position.z =
+            minimumZ
 
-        if (body.velocity.z < 0) {
+        if (
+            body.velocity.z < 0
+        ) {
             body.velocity.z =
                 -body.velocity.z *
-                config.restitution
+                config.wallRestitution
         }
     } else if (
-        body.position.z > maximumZ
+        body.position.z >
+        maximumZ
     ) {
-        body.position.z = maximumZ
+        body.position.z =
+            maximumZ
 
-        if (body.velocity.z > 0) {
+        if (
+            body.velocity.z > 0
+        ) {
             body.velocity.z =
                 -body.velocity.z *
-                config.restitution
+                config.wallRestitution
         }
+    }
+}
+
+function resolveAllBounds(
+    bodies: BubbleBody[],
+    config: PhysicsConfig,
+): void {
+    for (
+        const body of bodies
+    ) {
+        resolveWorldBounds(
+            body,
+            config,
+        )
     }
 }
 
@@ -260,7 +309,9 @@ export function stepPhysicsWorld(
     config = PHYSICS_CONFIG,
 ): void {
     if (
-        !Number.isFinite(deltaSeconds) ||
+        !Number.isFinite(
+            deltaSeconds,
+        ) ||
         deltaSeconds <= 0
     ) {
         throw new Error(
@@ -268,14 +319,21 @@ export function stepPhysicsWorld(
         )
     }
 
-    world.time += deltaSeconds
+    world.time +=
+        deltaSeconds
 
-    for (const body of world.bodies) {
+    for (
+        const body of world.bodies
+    ) {
         body.previousPosition.copy(
             body.position,
         )
 
-        body.force.set(0, 0, 0)
+        body.force.set(
+            0,
+            0,
+            0,
+        )
 
         accumulateAmbientForces(
             body,
@@ -288,9 +346,26 @@ export function stepPhysicsWorld(
             deltaSeconds,
             config,
         )
+    }
 
-        resolveWorldBounds(
-            body,
+    resolveAllBounds(
+        world.bodies,
+        config,
+    )
+
+    for (
+        let iteration = 0;
+        iteration <
+        config.collisionIterations;
+        iteration += 1
+    ) {
+        resolveBubbleCollisions(
+            world.bodies,
+            config,
+        )
+
+        resolveAllBounds(
+            world.bodies,
             config,
         )
     }
