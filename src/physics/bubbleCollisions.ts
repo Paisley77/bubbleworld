@@ -86,14 +86,25 @@ function resolveBubblePair(
         distance
 
     const inverseMassA =
-        1 / bodyA.mass
+        bodyA.isKinematic
+            ? 0
+            : 1 / bodyA.mass
 
     const inverseMassB =
-        1 / bodyB.mass
+        bodyB.isKinematic
+            ? 0
+            : 1 / bodyB.mass
 
     const inverseMassSum =
         inverseMassA +
         inverseMassB
+
+    if (
+        inverseMassSum <=
+        COLLISION_EPSILON
+    ) {
+        return true
+    }
 
     const correctionDepth =
         Math.max(

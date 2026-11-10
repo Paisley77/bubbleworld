@@ -73,9 +73,13 @@ h1 {
 .world-panel {
   min-height: 100vh;
 
-  cursor: pointer;
+  cursor: grab;
 
   touch-action: none;
+}
+
+.world-panel:active {
+  cursor: grabbing;
 }
 
 @media (max-width: 800px) {
