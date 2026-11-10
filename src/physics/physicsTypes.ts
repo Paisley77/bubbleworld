@@ -32,10 +32,14 @@ export interface PhysicsConfig {
 
 export interface BubbleBody {
     model: BubbleModel
+
     mass: number
+
+    isKinematic: boolean
 
     position: Vector3
     previousPosition: Vector3
+
     velocity: Vector3
     acceleration: Vector3
     force: Vector3

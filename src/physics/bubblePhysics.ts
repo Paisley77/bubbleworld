@@ -40,7 +40,7 @@ export const PHYSICS_CONFIG: PhysicsConfig = {
     windAcceleration: 0.32,
     depthAcceleration: 0.16,
 
-    maxSpeed: 1.4,
+    maxSpeed: 3.3,
 
     collisionCorrectionPercent: 0.8,
     collisionSlop: 0.001,
@@ -69,6 +69,8 @@ export function createPhysicsWorld(
                 mass: calculateMass(
                     model.radius,
                 ),
+
+                isKinematic: false,
 
                 position,
 
@@ -206,6 +208,7 @@ function resolveWorldBounds(
             minimumX
 
         if (
+            !body.isKinematic &&
             body.velocity.x < 0
         ) {
             body.velocity.x =
@@ -220,6 +223,7 @@ function resolveWorldBounds(
             maximumX
 
         if (
+            !body.isKinematic &&
             body.velocity.x > 0
         ) {
             body.velocity.x =
@@ -236,6 +240,7 @@ function resolveWorldBounds(
             minimumY
 
         if (
+            !body.isKinematic &&
             body.velocity.y < 0
         ) {
             body.velocity.y =
@@ -250,6 +255,7 @@ function resolveWorldBounds(
             maximumY
 
         if (
+            !body.isKinematic &&
             body.velocity.y > 0
         ) {
             body.velocity.y =
@@ -266,6 +272,7 @@ function resolveWorldBounds(
             minimumZ
 
         if (
+            !body.isKinematic &&
             body.velocity.z < 0
         ) {
             body.velocity.z =
@@ -280,6 +287,7 @@ function resolveWorldBounds(
             maximumZ
 
         if (
+            !body.isKinematic &&
             body.velocity.z > 0
         ) {
             body.velocity.z =
@@ -301,6 +309,46 @@ function resolveAllBounds(
             config,
         )
     }
+}
+
+export function clampBodyPositionToBounds(
+    body: BubbleBody,
+    config = PHYSICS_CONFIG,
+): void {
+    const radius =
+        body.model.radius
+
+    const {
+        min,
+        max,
+    } = config.bounds
+
+    body.position.x =
+        Math.min(
+            max.x - radius,
+            Math.max(
+                min.x + radius,
+                body.position.x,
+            ),
+        )
+
+    body.position.y =
+        Math.min(
+            max.y - radius,
+            Math.max(
+                min.y + radius,
+                body.position.y,
+            ),
+        )
+
+    body.position.z =
+        Math.min(
+            max.z - radius,
+            Math.max(
+                min.z + radius,
+                body.position.z,
+            ),
+        )
 }
 
 export function stepPhysicsWorld(
@@ -334,6 +382,18 @@ export function stepPhysicsWorld(
             0,
             0,
         )
+
+        if (
+            body.isKinematic
+        ) {
+            body.acceleration.set(
+                0,
+                0,
+                0,
+            )
+
+            continue
+        }
 
         accumulateAmbientForces(
             body,
